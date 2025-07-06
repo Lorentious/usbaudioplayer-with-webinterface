@@ -48,7 +48,7 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 ## Folder Structure
 
 usbaudioplayer-with-webinterface/\
-├── main.py               # Main program with Flask server & audio logic\
+├── app.py               # Main program with Flask server & audio logic\
 ├── templates/\
 │   └── index.html        # Web interface HTML\
 └── static/\
@@ -60,7 +60,7 @@ usbaudioplayer-with-webinterface/\
 
    - Supports local usage only (no multi-user support)
 
-   - Supported audio formats depend on pygame (commonly mp3, wav, ogg)
+   - Supported audio formats (commonly mp3, wav, ogg)
      
 ## License
 
