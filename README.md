@@ -52,7 +52,7 @@ usbaudioplayer-with-webinterface/\
 ├── templates/\
 │   └── index.html        # Web interface HTML\
 └── static/\
-    └── style.css         # External CSS for the web interface\
+    └── style.css         # External CSS for the web interface
 
 ## Notes
 
