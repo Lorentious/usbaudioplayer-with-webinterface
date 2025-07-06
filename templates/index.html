@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>USB Audio Player</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <h1>USB Audio Player</h1>
+
+  <table>
+    <thead>
+      <tr><th>Dateiname</th><th>Aktion</th></tr>
+    </thead>
+    <tbody>
+      {% for f in files %}
+      <tr>
+        <td>{{ f }}</td>
+        <td><button onclick="playFile('{{ f }}')">Abspielen</button></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="2">Keine Audio-Dateien gefunden.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div id="player-controls" style="display:none;">
+    <div id="current-file"></div>
+    <div id="progress-container" onclick="seek(event)">
+      <div id="progress"></div>
+    </div>
+    <div id="time">00:00 / 00:00</div>
+    <button onclick="togglePlayPause()">Pause / Play</button>
+    <button onclick="stopPlayback()">Stopp</button>
+  </div>
+
+  <audio id="audio-player"></audio>
+
+<script>
+const audio = document.getElementById('audio-player');
+const progress = document.getElementById('progress');
+const timeDisplay = document.getElementById('time');
+const playerControls = document.getElementById('player-controls');
+const currentFileDisplay = document.getElementById('current-file');
+let isPlaying = false;
+
+function playFile(filename) {
+  audio.src = `/stream/${encodeURIComponent(filename)}`;
+  audio.play();
+  isPlaying = true;
+  playerControls.style.display = 'block';
+  currentFileDisplay.textContent = 'Jetzt spielt: ' + filename;
+}
+
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration) {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progress.style.width = percent + '%';
+
+    let current = formatTime(audio.currentTime);
+    let duration = formatTime(audio.duration);
+    timeDisplay.textContent = `${current} / ${duration}`;
+  }
+});
+
+audio.addEventListener('ended', () => {
+  isPlaying = false;
+  playerControls.style.display = 'none';
+});
+
+function togglePlayPause() {
+  if (!audio.src) return;
+  if (audio.paused) {
+    audio.play();
+    isPlaying = true;
+  } else {
+    audio.pause();
+    isPlaying = false;
+  }
+}
+
+function stopPlayback() {
+  audio.pause();
+  audio.currentTime = 0;
+  isPlaying = false;
+  playerControls.style.display = 'none';
+}
+
+function seek(event) {
+  if (!audio.src) return;
+  const rect = event.currentTarget.getBoundingClientRect();
+  const clickX = event.clientX - rect.left;
+  const width = rect.width;
+  const newTime = (clickX / width) * audio.duration;
+  audio.currentTime = newTime;
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+</script>
+</body>
+</html>
