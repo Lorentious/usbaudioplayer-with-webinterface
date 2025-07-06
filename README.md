@@ -33,7 +33,7 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
    ```bash
    python app.py
 
-Usage
+## Usage
 
    1. On start, select your USB stick from the list shown in the terminal.
 
@@ -45,7 +45,7 @@ Usage
 
    5. Control playback with play/pause, stop buttons, see progress and time, and click on the progress bar to seek.
 
-Folder Structure
+## Folder Structure
 
 /
 ├── main.py               # Main program with Flask server & audio logic
@@ -54,14 +54,14 @@ Folder Structure
 └── static/
     └── style.css         # External CSS for the web interface
 
-Notes
+## Notes
 
    - Plays audio files only from the selected USB stick
 
    - Supports local usage only (no multi-user support)
 
    - Supported audio formats depend on pygame (commonly mp3, wav, ogg)
-
-License
+     
+## License
 
 This project is licensed under the MIT License.
