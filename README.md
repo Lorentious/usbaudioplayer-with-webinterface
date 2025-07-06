@@ -3,7 +3,6 @@
 A simple Python USB audio player with a web interface using Flask.  
 Allows selection of USB audio playback devices and USB drives via the terminal, and lets you browse and play audio files from the USB stick through a clean browser-based player.
 
----
 
 ## Features
 
@@ -14,15 +13,12 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 - Clean, minimalistic tabular design with external CSS  
 - Works fully offline (no internet required)  
 
----
-
 ## Requirements
 
 - Python 3.7 or higher  
 - Flask (Python web framework)  
 - pygame (for audio playback)  
 
----
 
 ## Installation
 
@@ -43,7 +39,7 @@ Usage
 
    2. Next, select the desired audio output device from the terminal list.
 
-   3. The web interface will start automatically, accessible at http://localhost:5000.
+   3. The web interface will start automatically, accessible at http://localhost:8080.
 
    4. Browse the audio files on your USB stick and play them by clicking.
 
