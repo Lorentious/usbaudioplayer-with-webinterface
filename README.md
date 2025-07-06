@@ -47,7 +47,7 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 
 ## Folder Structure
 
-/\
+usbaudioplayer-with-webinterface/\
 ├── main.py               # Main program with Flask server & audio logic\
 ├── templates/\
 │   └── index.html        # Web interface HTML\
