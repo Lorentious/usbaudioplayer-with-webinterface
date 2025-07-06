@@ -32,21 +32,22 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
    ```bash
    pip install flask pygame
 
-    Run the main script:
 
-    python main.py
+Run the main script:
+
+    python app.py
 
 Usage
 
-    On start, select your USB stick from the list shown in the terminal.
+   1. On start, select your USB stick from the list shown in the terminal.
 
-    Next, select the desired audio output device from the terminal list.
+   2. Next, select the desired audio output device from the terminal list.
 
-    The web interface will start automatically, accessible at http://localhost:5000.
+   3. The web interface will start automatically, accessible at http://localhost:5000.
 
-    Browse the audio files on your USB stick and play them by clicking.
+   4. Browse the audio files on your USB stick and play them by clicking.
 
-    Control playback with play/pause, stop buttons, see progress and time, and click on the progress bar to seek.
+   5. Control playback with play/pause, stop buttons, see progress and time, and click on the progress bar to seek.
 
 Folder Structure
 
@@ -59,11 +60,11 @@ Folder Structure
 
 Notes
 
-    Plays audio files only from the selected USB stick
+   - Plays audio files only from the selected USB stick
 
-    Supports local usage only (no multi-user support)
+   - Supports local usage only (no multi-user support)
 
-    Supported audio formats depend on pygame (commonly mp3, wav, ogg)
+   - Supported audio formats depend on pygame (commonly mp3, wav, ogg)
 
 License
 
