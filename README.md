@@ -31,6 +31,7 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 
 3. Run the main script:
 
+   ```bash
     python app.py
 
 Usage
