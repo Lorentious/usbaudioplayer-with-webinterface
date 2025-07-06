@@ -47,12 +47,12 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 
 ## Folder Structure
 
-/
-├── main.py               # Main program with Flask server & audio logic
-├── templates/
-│   └── index.html        # Web interface HTML
-└── static/
-    └── style.css         # External CSS for the web interface
+/\
+├── main.py               # Main program with Flask server & audio logic\
+├── templates/\
+│   └── index.html        # Web interface HTML\
+└── static/\
+    └── style.css         # External CSS for the web interface\
 
 ## Notes
 
