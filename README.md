@@ -28,7 +28,6 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
    ```bash
    pip install flask pygame
 
-
 3. Run the main script:
 
    ```bash
