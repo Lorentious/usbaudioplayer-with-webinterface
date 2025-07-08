@@ -25,82 +25,106 @@
     </tbody>
   </table>
 
-  <div id="player-controls" style="display:none;">
+  <div id="controls" style="display:none; max-width:600px; margin-top:1rem;">
     <div id="current-file"></div>
-    <div id="progress-container" onclick="seek(event)">
-      <div id="progress"></div>
+    <div id="progress-container" style="width:100%; height: 20px; background:#ddd; cursor:pointer; position:relative;">
+      <div id="progress" style="height:100%; background:#666; width:0%;"></div>
     </div>
-    <div id="time">00:00 / 00:00</div>
+    <div id="time" style="font-family: monospace; margin-top: 0.3rem;">00:00 / 00:00</div>
     <button onclick="togglePlayPause()">Pause / Play</button>
     <button onclick="stopPlayback()">Stopp</button>
   </div>
 
-  <audio id="audio-player"></audio>
+  <script>
+    let currentDuration = 0;
+    let isDragging = false;
+    let dragPercent = 0;
+    let seeking = false;
 
-<script>
-const audio = document.getElementById('audio-player');
-const progress = document.getElementById('progress');
-const timeDisplay = document.getElementById('time');
-const playerControls = document.getElementById('player-controls');
-const currentFileDisplay = document.getElementById('current-file');
-let isPlaying = false;
+    const progressBar = document.getElementById("progress");
+    const progressContainer = document.getElementById("progress-container");
+    const timeLabel = document.getElementById("time");
 
-function playFile(filename) {
-  audio.src = `/stream/${encodeURIComponent(filename)}`;
-  audio.play();
-  isPlaying = true;
-  playerControls.style.display = 'block';
-  currentFileDisplay.textContent = 'Jetzt spielt: ' + filename;
-}
+    function format(t) {
+      t = Math.floor(t);
+      return String(Math.floor(t/60)).padStart(2,'0') + ":" + String(t%60).padStart(2,'0');
+    }
 
-audio.addEventListener('timeupdate', () => {
-  if (audio.duration) {
-    const percent = (audio.currentTime / audio.duration) * 100;
-    progress.style.width = percent + '%';
+    function playFile(filename) {
+      fetch('/play', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ filename })
+      });
+    }
 
-    let current = formatTime(audio.currentTime);
-    let duration = formatTime(audio.duration);
-    timeDisplay.textContent = `${current} / ${duration}`;
-  }
-});
+    function togglePlayPause() {
+      fetch('/toggle', { method: 'POST' });
+    }
 
-audio.addEventListener('ended', () => {
-  isPlaying = false;
-  playerControls.style.display = 'none';
-});
+    function stopPlayback() {
+      fetch('/stop', { method: 'POST' });
+    }
 
-function togglePlayPause() {
-  if (!audio.src) return;
-  if (audio.paused) {
-    audio.play();
-    isPlaying = true;
-  } else {
-    audio.pause();
-    isPlaying = false;
-  }
-}
+    function seekToPercent(percent) {
+      if (!currentDuration) return;
+      const seconds = percent * currentDuration;
+      seeking = true;
+      fetch('/seek', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ seconds })
+      }).then(() => {
+        setTimeout(() => seeking = false, 300);
+      });
+    }
 
-function stopPlayback() {
-  audio.pause();
-  audio.currentTime = 0;
-  isPlaying = false;
-  playerControls.style.display = 'none';
-}
+    progressContainer.addEventListener('mousedown', e => {
+      isDragging = true;
+      updateProgressFromEvent(e);
+    });
 
-function seek(event) {
-  if (!audio.src) return;
-  const rect = event.currentTarget.getBoundingClientRect();
-  const clickX = event.clientX - rect.left;
-  const width = rect.width;
-  const newTime = (clickX / width) * audio.duration;
-  audio.currentTime = newTime;
-}
+    window.addEventListener('mouseup', e => {
+      if (isDragging) {
+        isDragging = false;
+        seekToPercent(dragPercent);
+      }
+    });
 
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-}
-</script>
+    window.addEventListener('mousemove', e => {
+      if (isDragging) {
+        updateProgressFromEvent(e);
+      }
+    });
+
+    function updateProgressFromEvent(e) {
+      const rect = progressContainer.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      if (x < 0) x = 0;
+      if (x > rect.width) x = rect.width;
+      dragPercent = x / rect.width;
+      progressBar.style.width = (dragPercent * 100) + '%';
+      timeLabel.textContent = format(dragPercent * currentDuration) + ' / ' + format(currentDuration);
+    }
+
+    function updateStatus() {
+      if (seeking) return;
+      fetch('/status').then(r => r.json()).then(data => {
+        if (!data.filename) {
+          document.getElementById('controls').style.display = 'none';
+          return;
+        }
+        document.getElementById('controls').style.display = 'block';
+        document.getElementById('current-file').textContent = data.filename;
+        currentDuration = data.duration || 0;
+        const pos = Math.min(data.position, currentDuration);
+        const percent = currentDuration ? (pos / currentDuration) : 0;
+        progressBar.style.width = (percent * 100) + '%';
+        timeLabel.textContent = format(pos) + ' / ' + format(currentDuration);
+      });
+    }
+
+    setInterval(updateStatus, 500);
+  </script>
 </body>
 </html>
