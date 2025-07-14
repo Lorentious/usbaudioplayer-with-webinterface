@@ -170,7 +170,7 @@ def run_flask():
     for x in ips:
         print(f"Accessible via: http://{x}:8080 (LAN)")
     print("\n")
-    print("Press Ctrl+C to stop the server.\n")
+    print("Press Ctrl+C to stop the server.")
     serve(app, host="0.0.0.0", port=8080)
     
 
