@@ -7,7 +7,6 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 ## Features
 
 - Select USB stick via terminal  
-- Select audio output device via terminal  
 - Web interface to browse and play audio files from the USB stick  
 - Simple audio player with play/pause, stop, progress bar, and seek functionality  
 - Clean, minimalistic tabular design with external CSS  
@@ -17,7 +16,8 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 
 - Python 3.7 or higher  
 - Flask (Python web framework)  
-- pygame (for audio playback)  
+- pygame (for audio playback)
+- mutagen (to handle audio metadata)
 
 
 ## Installation
@@ -61,7 +61,7 @@ usbaudioplayer-with-webinterface/\
 
    - Plays audio files only from the selected USB stick
 
-   - Supports local usage only (no multi-user support)
+   - Supports multi-user usage
 
    - Supported audio formats (commonly mp3, wav, ogg)
      
