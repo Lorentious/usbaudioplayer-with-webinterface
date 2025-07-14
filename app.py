@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import threading
 import pygame
@@ -9,6 +10,9 @@ app = Flask(__name__)
 
 selected_usb = None
 current_file = None
+
+output = os.popen('ipconfig | findstr /i "ipv4"').read()
+ips = re.findall(r'(\d+\.\d+\.\d+\.\d+)', output)
 
 audio_state = {
     "filename": None,
@@ -147,7 +151,8 @@ def status():
 def run_flask():
     print("Flask server is running...")
     print("On port 8080, accessible via http://localhost:8080")
-    print("Or http://<your-ip>:8080 from other devices on the network")
+    for x in ips:
+        print("Or http://" + x + ":8080 from other devices on the network")
     serve(app, host="0.0.0.0", port=8080)
     
 
