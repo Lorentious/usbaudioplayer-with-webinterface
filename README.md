@@ -26,7 +26,10 @@ Allows selection of USB audio playback devices and USB drives via the terminal, 
 2. Install dependencies:
 
    ```bash
-   pip install flask pygame
+   pip install flask
+   pip install pygame
+   pip install waitress
+   pip install mutagen
 
 3. Run the main script:
 
