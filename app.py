@@ -2,9 +2,25 @@ import os
 import re
 import time
 import threading
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pygame.pkgdata")
+
 import pygame
 from flask import Flask, render_template, jsonify, request, send_from_directory, abort
 from waitress import serve
+
+def clear_terminal():
+    os.system("cls")
+
+def banner():
+    print("==============================================")
+    print("         Welcome to Remote Audio Player         ")
+    print("      powered by Flask, pygame & Waitress     ")
+    print("==============================================\n")
+
+clear_terminal()
+banner()
 
 app = Flask(__name__)
 
@@ -149,10 +165,12 @@ def status():
     })
 
 def run_flask():
-    print("Flask server is running...")
-    print("On port 8080, accessible via http://localhost:8080")
+    print("Flask server is running.")
+    print("Listening on: http://localhost:8080")
     for x in ips:
-        print("Or http://" + x + ":8080 from other devices on the network")
+        print(f"Accessible via: http://{x}:8080 (LAN)")
+    print("\n")
+    print("Press Ctrl+C to stop the server.\n")
     serve(app, host="0.0.0.0", port=8080)
     
 
@@ -160,21 +178,21 @@ if __name__ == "__main__":
     selected_usb = None
     drives = list_usb_drives()
     if not drives:
-        print("Keine USB-Sticks gefunden!")
+        print("No USB drives found.")
         exit(1)
     if len(drives) == 1:
         selected_usb = drives[0]
     else:
-        print("Gefundene USB-Sticks:")
+        print("Detected USB drives:")
         for i, d in enumerate(drives, 1):
             print(f"{i}. {d}")
         while True:
-            choice = input(f"Wähle USB-Stick (1-{len(drives)}): ")
+            choice = input(f"Select USB drive (1-{len(drives)}): ")
             if choice.isdigit() and 1 <= int(choice) <= len(drives):
                 selected_usb = drives[int(choice) - 1]
                 break
-            print("Ungültige Eingabe!")
+            print("Invalid input. Please try again.")
 
-    print(f"Benutzter USB-Stick: {selected_usb}")
+    print(f"Selected USB drive: {selected_usb}\n")
     pygame.mixer.init()
     threading.Thread(target=run_flask).start()
