@@ -36,6 +36,7 @@
     <button onclick="playPrevious()">Previous</button>
     <button id="autoplay-toggle" onclick="toggleAutoplay()" style="background-color: red; color: white;">Autoplay: Off</button>
     <button onclick="playNext()">Next</button>
+    <button id="repeat-btn">Repeat: Off</button>
   </div>
 
   <script>
@@ -43,6 +44,7 @@
     let isDragging = false;
     let dragPercent = 0;
     let seeking = false;
+    let repeatEnabled = false;
 
     const progressBar = document.getElementById("progress");
     const progressContainer = document.getElementById("progress-container");
@@ -111,6 +113,17 @@
         btn.style.color = "white";
     }
 
+    document.getElementById('repeat-btn').onclick = function() {
+        repeatEnabled = !repeatEnabled;
+        fetch('/repeat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({enabled: repeatEnabled})
+        }).then(() => {
+            document.getElementById('repeat-btn').innerText = 'Repeat: ' + (repeatEnabled ? 'On' : 'Off');
+        });
+    };
+
     progressContainer.addEventListener('mousedown', e => {
       isDragging = true;
       updateProgressFromEvent(e);
@@ -153,6 +166,8 @@
         progressBar.style.width = (percent * 100) + '%';
         timeLabel.textContent = format(pos) + ' / ' + format(currentDuration);
         document.getElementById('autoplay-toggle').innerText = `Autoplay: ${data.autoplay_enabled ? 'On' : 'Off'}`;
+        repeatEnabled = data.repeat_enabled;
+        document.getElementById('repeat-btn').innerText = 'Repeat: ' + (repeatEnabled ? 'On' : 'Off');
       });
     }
 
@@ -164,6 +179,7 @@
             .then(response => response.json())
             .then(data => {
                 updateAutoplayButton(data.autoplay_enabled);
+                document.getElementById('repeat-btn').innerText = 'Repeat: ' + (data.repeat_enabled ? 'On' : 'Off');
             });
     };
   </script>
