@@ -2,21 +2,25 @@ import os
 import re
 import time
 import threading
-
+from os import system
 import warnings
+ConsoleTitle = "USB Audio Player - Laurenz Küster 2025"
 warnings.filterwarnings("ignore", category=UserWarning, module="pygame.pkgdata")
 
 import pygame
 from flask import Flask, render_template, jsonify, request, send_from_directory, abort
 from waitress import serve
 
+system("title " + ConsoleTitle)
 def clear_terminal():
     os.system("cls")
 
 def banner():
     print("==============================================")
-    print("         Welcome to Remote Audio Player         ")
+    print("         Welcome to Remote Audio Player       ")
     print("      powered by Flask, pygame & Waitress     ")
+    print("==============================================")
+    print("          Made by Laurenz Küster 2025         ")
     print("==============================================\n")
 
 clear_terminal()
@@ -39,6 +43,7 @@ audio_state = {
 }
 
 autoplay_enabled = False
+repeat_enabled = False  # Neue Variable für Repeat
 
 def list_usb_drives():
     import ctypes
@@ -152,6 +157,12 @@ def seek():
         })
     return jsonify(success=True)
 
+@app.route('/repeat', methods=['POST'])
+def toggle_repeat():
+    global repeat_enabled
+    repeat_enabled = request.json.get("enabled", False)
+    return jsonify(success=True, repeat=repeat_enabled)
+
 @app.route('/status')
 def status():
     if audio_state["is_playing"]:
@@ -165,7 +176,8 @@ def status():
         "duration": audio_state["duration"],
         "position": position,
         "is_playing": audio_state["is_playing"],
-        "autoplay_enabled": autoplay_enabled  # Autoplay-Status hinzufügen
+        "autoplay_enabled": autoplay_enabled,
+        "repeat_enabled": repeat_enabled  # Repeat-Status hinzufügen
     })
 
 @app.route('/autoplay', methods=['POST'])
@@ -213,6 +225,19 @@ def play_next(filename):
 
 def on_music_end():
     global current_file
+    if repeat_enabled and current_file:
+        path = os.path.join(selected_usb, current_file)
+        if os.path.exists(path):
+            pygame.mixer.music.load(path)
+            pygame.mixer.music.play()
+            audio_state.update({
+                "filename": current_file,
+                "duration": get_audio_length(path),
+                "start_time": time.time(),
+                "seek_offset": 0,
+                "is_playing": True
+            })
+        return
     if autoplay_enabled:
         files = list_audio_files(selected_usb)
         if files and current_file in files:
@@ -275,3 +300,9 @@ if __name__ == "__main__":
     pygame.event.set_allowed(pygame.USEREVENT)
     threading.Thread(target=event_listener, daemon=True).start()
     threading.Thread(target=run_flask).start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nBeende Programm...")
+        os._exit(0)
