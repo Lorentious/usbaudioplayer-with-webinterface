@@ -33,6 +33,9 @@
     <div id="time" style="font-family: monospace; margin-top: 0.3rem;">00:00 / 00:00</div>
     <button onclick="togglePlayPause()">Pause / Play</button>
     <button onclick="stopPlayback()">Stopp</button>
+    <button onclick="playPrevious()">Previous</button>
+    <button id="autoplay-toggle" onclick="toggleAutoplay()" style="background-color: red; color: white;">Autoplay: Off</button>
+    <button onclick="playNext()">Next</button>
   </div>
 
   <script>
@@ -79,6 +82,35 @@
       });
     }
 
+    function playPrevious() {
+        fetch('/previous', { method: 'POST' });
+    }
+
+    function playNext() {
+        fetch('/next', { method: 'POST' });
+    }
+
+    function toggleAutoplay() {
+        const isOn = document.getElementById('autoplay-toggle').dataset.on === "true";
+        fetch('/autoplay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: !isOn })
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateAutoplayButton(data.autoplay);
+        });
+    }
+
+    function updateAutoplayButton(isOn) {
+        const btn = document.getElementById('autoplay-toggle');
+        btn.dataset.on = isOn ? "true" : "false";
+        btn.innerText = `Autoplay: ${isOn ? "On" : "Off"}`;
+        btn.style.backgroundColor = isOn ? "green" : "red";
+        btn.style.color = "white";
+    }
+
     progressContainer.addEventListener('mousedown', e => {
       isDragging = true;
       updateProgressFromEvent(e);
@@ -108,7 +140,6 @@
     }
 
     function updateStatus() {
-      if (seeking) return;
       fetch('/status').then(r => r.json()).then(data => {
         if (!data.filename) {
           document.getElementById('controls').style.display = 'none';
@@ -121,10 +152,20 @@
         const percent = currentDuration ? (pos / currentDuration) : 0;
         progressBar.style.width = (percent * 100) + '%';
         timeLabel.textContent = format(pos) + ' / ' + format(currentDuration);
+        document.getElementById('autoplay-toggle').innerText = `Autoplay: ${data.autoplay_enabled ? 'On' : 'Off'}`;
       });
     }
 
     setInterval(updateStatus, 500);
+
+    // Status beim Laden der Seite abrufen
+    window.onload = function() {
+        fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                updateAutoplayButton(data.autoplay_enabled);
+            });
+    };
   </script>
 </body>
 </html>
