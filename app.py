@@ -271,7 +271,6 @@ if __name__ == "__main__":
     print(f"Selected USB drive: {selected_usb}\n")
     pygame.mixer.init()
     pygame.display.init()
-    pygame.display.set_mode((1, 1))
     pygame.mixer.music.set_endevent(pygame.USEREVENT)
     pygame.event.set_allowed(pygame.USEREVENT)
     threading.Thread(target=event_listener, daemon=True).start()
