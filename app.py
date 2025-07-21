@@ -38,6 +38,8 @@ audio_state = {
     "duration": 0
 }
 
+autoplay_enabled = False
+
 def list_usb_drives():
     import ctypes
     drives = []
@@ -55,6 +57,7 @@ def list_audio_files(path):
     exts = ['.mp3', '.wav', '.ogg']
     try:
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and os.path.splitext(f)[1].lower() in exts]
+        files.sort(key=lambda x: x.lower())  # Sortiert alphabetisch (A-Z, 0-9)
     except Exception:
         files = []
     return files
@@ -161,8 +164,80 @@ def status():
         "filename": audio_state["filename"],
         "duration": audio_state["duration"],
         "position": position,
-        "is_playing": audio_state["is_playing"]
+        "is_playing": audio_state["is_playing"],
+        "autoplay_enabled": autoplay_enabled  # Autoplay-Status hinzufügen
     })
+
+@app.route('/autoplay', methods=['POST'])
+def toggle_autoplay():
+    global autoplay_enabled
+    autoplay_enabled = request.json.get("enabled", False)
+    return jsonify(success=True, autoplay=autoplay_enabled)
+
+@app.route('/next', methods=['POST'])
+def next_track():
+    global current_file
+    files = list_audio_files(selected_usb)
+    if current_file in files:
+        next_index = (files.index(current_file) + 1) % len(files)
+        next_file = files[next_index]
+        return play_next(next_file)
+    return jsonify(success=False)
+
+@app.route('/previous', methods=['POST'])
+def previous_track():
+    global current_file
+    files = list_audio_files(selected_usb)
+    if current_file in files:
+        prev_index = (files.index(current_file) - 1) % len(files)
+        prev_file = files[prev_index]
+        return play_next(prev_file)
+    return jsonify(success=False)
+
+def play_next(filename):
+    path = os.path.join(selected_usb, filename)
+    if not os.path.exists(path):
+        return jsonify(success=False), 404
+    pygame.mixer.music.load(path)
+    pygame.mixer.music.play()
+    audio_state.update({
+        "filename": filename,
+        "duration": get_audio_length(path),
+        "start_time": time.time(),
+        "seek_offset": 0,
+        "is_playing": True
+    })
+    global current_file
+    current_file = filename
+    return jsonify(success=True)
+
+def on_music_end():
+    global current_file
+    if autoplay_enabled:
+        files = list_audio_files(selected_usb)
+        if files and current_file in files:
+            next_index = (files.index(current_file) + 1) % len(files)
+            next_file = files[next_index]
+            # Direkt abspielen, ohne Rückgabe an Client
+            path = os.path.join(selected_usb, next_file)
+            if os.path.exists(path):
+                pygame.mixer.music.load(path)
+                pygame.mixer.music.play()
+                audio_state.update({
+                    "filename": next_file,
+                    "duration": get_audio_length(path),
+                    "start_time": time.time(),
+                    "seek_offset": 0,
+                    "is_playing": True
+                })
+                current_file = next_file
+
+def event_listener():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.USEREVENT:
+                on_music_end()
+        time.sleep(0.1)
 
 def run_flask():
     print("Flask server is running.")
@@ -195,4 +270,9 @@ if __name__ == "__main__":
 
     print(f"Selected USB drive: {selected_usb}\n")
     pygame.mixer.init()
+    pygame.display.init()
+    pygame.display.set_mode((1, 1))
+    pygame.mixer.music.set_endevent(pygame.USEREVENT)
+    pygame.event.set_allowed(pygame.USEREVENT)
+    threading.Thread(target=event_listener, daemon=True).start()
     threading.Thread(target=run_flask).start()
